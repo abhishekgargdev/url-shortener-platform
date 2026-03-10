@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  urls      Url[]
+}
+
+model Url {
+  id             Int        @id @default(autoincrement())
+  originalUrl    String
+  shortCode      String     @unique
+  userId         Int?
+  user           User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expirationDate DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  clicks         Click[]
+  analytics      Analytics?
+}
+
+model Click {
+  id        Int      @id @default(autoincrement())
+  urlId     Int
+  url       Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  location  String?
+  browser   String?
+  device    String?
+  os        String?
+  createdAt DateTime @default(now())
+}
+
+model Analytics {
+  id            Int       @id @default(autoincrement())
+  urlId         Int       @unique
+  url           Url       @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  totalClicks   Int       @default(0)
+  uniqueClicks  Int       @default(0)
+  lastClickedAt DateTime?
+  updatedAt     DateTime  @updatedAt
+}
